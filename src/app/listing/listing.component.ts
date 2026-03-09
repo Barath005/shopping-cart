@@ -1,16 +1,20 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { SharedService } from '../shared/shared.service';
 import { Subscription } from 'rxjs';
+import { trigger, transition, query, style, stagger, animate } from '@angular/animations';
+import { SharedService } from '../shared/shared.service';
 import { Product } from '../shared/constant/data.model';
-import {trigger, transition, query, style, stagger, animate } from '@angular/animations';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-listing',
+  standalone: true,
+  imports: [CommonModule, RouterModule,FormsModule],
   templateUrl: './listing.component.html',
-  styleUrls: ['./listing.component.css'], 
+  styleUrls: ['./listing.component.css'],
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
@@ -19,18 +23,16 @@ import {trigger, transition, query, style, stagger, animate } from '@angular/ani
           stagger(50, [
             animate('200ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
           ])
-        ], { optional: true }) // Ensure the animation is optional to avoid errors
+        ], { optional: true })
       ]),
-      // Animation start and done callbacks
       transition('* => *', [
         animate('100ms', style({ opacity: 0 })),
-        // Animation start callback
         query('.card', [
           style({ opacity: 0, transform: 'translateY(-20px)' }),
           stagger(50, [
             animate('300ms ease-in', style({ opacity: 1, transform: 'translateY(0)' }))
           ])
-        ], { optional: true }), // Ensure the animation is optional to avoid errors
+        ], { optional: true }),
       ]),
     ])
   ]
@@ -87,20 +89,20 @@ export class ListingComponent implements OnInit, OnDestroy {
 
   resetSearch(): void {
     if (this.initialLoad) {
-      this.initialLoad = false; // Reset the flag after the first call
+      this.initialLoad = false;
       return;
     }
     this.searchValue = '';
     this.searchProductsDetails = [];
     this.firstSearch = true;
-    this.products = [...this.beforeSearch]; // Ensure products are reset to beforeSearch state
+    this.products = [...this.beforeSearch];
   }
 
   search() {
-    if (this.searchValue.trim() !== "") {
+    if (this.searchValue.trim() !== '') {
       this.searchProductsDetails = [];
       this.initialLoad = false;
-      const searchTerms = this.searchValue.toLowerCase().split(" ");
+      const searchTerms = this.searchValue.toLowerCase().split(' ');
       this.beforeSearch.forEach(element => {
         const titleLower = element.title.toLowerCase();
         const anyTermMatches = searchTerms.some(term => titleLower.includes(term));
@@ -109,7 +111,7 @@ export class ListingComponent implements OnInit, OnDestroy {
         }
       });
       this.products = this.searchProductsDetails;
-    } else if (!this.initialLoad) { // Prevent resetting during initial load
+    } else if (!this.initialLoad) {
       this.products = [...this.beforeSearch];
     }
   }
@@ -121,21 +123,21 @@ export class ListingComponent implements OnInit, OnDestroy {
   }
 
   fetchProducts(category: string): void {
-    this.priceRange = "Default";
+    this.priceRange = 'Default';
     this.products = [];
     this.sharedService.updateSearchTerm('');
-    if (category !== "All") {
+    if (category !== 'All') {
       this.httpClient.get<any>(`https://dummyjson.com/products/category/${category}`).subscribe(result => {
         this.products = result.products;
         this.beforeSearch = [...this.products];
-        sessionStorage.setItem('category',category);
+        sessionStorage.setItem('category', category);
       });
     } else {
       this.httpClient.get<any>('https://dummyjson.com/products?limit=0').subscribe(result => {
         this.products = result.products;
         this.selectedCategory = category;
         this.beforeSearch = [...this.products];
-        sessionStorage.setItem('category',category);
+        sessionStorage.setItem('category', category);
       });
     }
   }
@@ -149,17 +151,16 @@ export class ListingComponent implements OnInit, OnDestroy {
   onPriceChange(value: Event) {
     const target = value.target as HTMLSelectElement;
     const selectedPrice = target.value;
-
-    if (selectedPrice === "LowToHigh") {
+    if (selectedPrice === 'LowToHigh') {
       this.sortProducts('asc');
-    } else if (selectedPrice === "HighToLow") {
+    } else if (selectedPrice === 'HighToLow') {
       this.sortProducts('desc');
     }
   }
 
   sortProducts(order: 'asc' | 'desc') {
     this.products = [];
-    if (this.selectedCategory !== "All") {
+    if (this.selectedCategory !== 'All') {
       this.httpClient.get<any>(`https://dummyjson.com/products/category/${this.selectedCategory}?sortBy=price&order=${order}`).subscribe(result => {
         this.products = result.products;
         this.beforeSearch = [...this.products];

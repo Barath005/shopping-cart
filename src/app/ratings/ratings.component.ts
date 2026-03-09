@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient} from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-ratings',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './ratings.component.html',
   styleUrls: ['./ratings.component.css']
 })
@@ -15,13 +19,13 @@ export class RatingsComponent implements OnInit {
   public selectedStars: number = 0;
   reviewDescription: string = '';
   public reviews: any[] = [];
-  public username: string  = '';
+  public username: string = '';
   public email: string | null = '';
-  public individual_review: any = {}; // Changed to any
-  public existingReviews: any[] | null = null; // Initialize as null
+  public individual_review: any = {};
+  public existingReviews: any[] | null = null;
   public productReviews: any[] = [];
-  public currentDate : Date = new Date(); // Get current date and time
-  public formattedDate :string = this.currentDate.toISOString();
+  public currentDate: Date = new Date();
+  public formattedDate: string = this.currentDate.toISOString();
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 
@@ -33,7 +37,6 @@ export class RatingsComponent implements OnInit {
         this.loadReviews(this.singleproductId);
       }
     });
-
   }
 
   public drawStarsRate(ratings: number): string[] {
@@ -43,34 +46,28 @@ export class RatingsComponent implements OnInit {
     }
     return stars;
   }
+
   public drawStars(ratings: number): string[] {
     const stars: string[] = [];
     for (let i = 0; i < 5; i++) {
-      stars.push(i < ratings-1 ? 'fa-solid fa-star active' : 'fa-solid fa-star');
+      stars.push(i < ratings - 1 ? 'fa-solid fa-star active' : 'fa-solid fa-star');
     }
     return stars;
   }
 
   getRatingInfo(selectedStars: number): { description: string, className: string } {
     switch (selectedStars) {
-      case 1:
-        return { description: "Worst", className: "worst-rating" };
-      case 2:
-        return { description: "Bad", className: "bad-rating" };
-      case 3:
-        return { description: "Average", className: "best-rating" };
-      case 4:
-        return { description: "Good", className: "best-rating" };
-      case 5:
-        return { description: "Best Product", className: "best-rating" };
-      default:
-        return { description: "", className: "" };
+      case 1: return { description: 'Worst', className: 'worst-rating' };
+      case 2: return { description: 'Bad', className: 'bad-rating' };
+      case 3: return { description: 'Average', className: 'best-rating' };
+      case 4: return { description: 'Good', className: 'best-rating' };
+      case 5: return { description: 'Best Product', className: 'best-rating' };
+      default: return { description: '', className: '' };
     }
   }
 
   public getMethod(singleproductId: string) {
     this.http.get(`https://dummyjson.com/products/${singleproductId}`).subscribe((data: any) => {
-      console.log(data);
       this.getJsonData = data;
       if (data && Array.isArray(data.reviews)) {
         this.reviews = data.reviews;
@@ -104,28 +101,23 @@ export class RatingsComponent implements OnInit {
   }
 
   popsubmitrev() {
-    
-    this.username =  `${sessionStorage.getItem("firstName")} ${sessionStorage.getItem("lastName")}`;
-    this.email = sessionStorage.getItem("email");
+    this.username = `${sessionStorage.getItem('firstName')} ${sessionStorage.getItem('lastName')}`;
+    this.email = sessionStorage.getItem('email');
 
-
-    if(!this.selectedStars || !this.reviewDescription){
+    if (!this.selectedStars || !this.reviewDescription) {
       alert('Please leave your comment');
-      return ;
-    }
-    if (this.username == 'null null' || this.username.trim() === '') {
-      alert("Please log in to leave a review.");
       return;
     }
-    else{
-      console.log(this.username);
-      
-      this.individual_review = {  
+    if (this.username == 'null null' || this.username.trim() === '') {
+      alert('Please log in to leave a review.');
+      return;
+    } else {
+      this.individual_review = {
         username: this.username,
         rating: this.selectedStars,
         description: this.reviewDescription,
         email: this.email,
-        date :this.formattedDate
+        date: this.formattedDate
       };
 
       const existingReviewsJson = localStorage.getItem(`productReviews_${this.singleproductId}`);
@@ -133,16 +125,13 @@ export class RatingsComponent implements OnInit {
       if (this.existingReviews !== null) {
         this.existingReviews.push(this.individual_review);
       } else {
-        this.existingReviews = [this.individual_review]; // Initialize if null
+        this.existingReviews = [this.individual_review];
       }
 
       localStorage.setItem(`productReviews_${this.singleproductId}`, JSON.stringify(this.existingReviews));
-
       this.loadReviews(this.singleproductId);
       this.clearPopup();
       this.showrevpop = false;
-    } 
-   
+    }
   }
 }
-

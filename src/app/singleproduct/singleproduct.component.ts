@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { CommonModule, Location } from '@angular/common';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from '../services/cart.service';
-import { Location } from '@angular/common';
-
+import { RatingsComponent } from '../ratings/ratings.component';
 
 @Component({
   selector: 'app-singleproduct',
+  standalone: true,
+  imports: [CommonModule, RouterModule, RatingsComponent],
   templateUrl: './singleproduct.component.html',
   styleUrls: ['./singleproduct.component.css']
 })
@@ -16,21 +18,19 @@ export class SingleproductComponent implements OnInit {
   name: any;
   thumbnail: any;
   price: number = 0;
-
   singleResult: any = null;
   mainImage: string = '';
-  userId: string | null = sessionStorage.getItem('ID'); // Retrieve session ID
-    isAdditionalInfoVisible: boolean = false; // To track visibility
-
+  userId: string | null = sessionStorage.getItem('ID');
+  isAdditionalInfoVisible: boolean = false;
   cartItemCount: any;
   cartItems: any = [];
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private httpClient: HttpClient,private cartService: CartService,
-    private location: Location,
-    
+    private httpClient: HttpClient,
+    private cartService: CartService,
+    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -43,15 +43,15 @@ export class SingleproductComponent implements OnInit {
   }
 
   fetchSingleProduct(singleproductId: string): void {
-    this.httpClient.get<any>(`https://dummyjson.com/products/${singleproductId}`).subscribe(
-      (single) => {
+    this.httpClient.get<any>(`https://dummyjson.com/products/${singleproductId}`).subscribe({
+      next: (single) => {
         this.singleResult = single;
         this.mainImage = single.thumbnail;
       },
-      (error) => {
+      error: (error) => {
         console.error('Error fetching data:', error);
       }
-    );
+    });
   }
 
   onImageClick(imageUrl: string) {
@@ -65,10 +65,8 @@ export class SingleproductComponent implements OnInit {
     }
 
     const cartKey = 'cart_' + this.userId;
-
- 
-     this.cartItems = JSON.parse(localStorage.getItem(cartKey) || '[]');
-    const existingItemIndex = this.cartItems.findIndex((item:any) => item.productId === this.singleproductId);
+    this.cartItems = JSON.parse(localStorage.getItem(cartKey) || '[]');
+    const existingItemIndex = this.cartItems.findIndex((item: any) => item.productId === this.singleproductId);
 
     if (existingItemIndex !== -1) {
       this.cartItems[existingItemIndex].quantity++;
@@ -83,13 +81,11 @@ export class SingleproductComponent implements OnInit {
     }
 
     localStorage.setItem(cartKey, JSON.stringify(this.cartItems));
-
     alert('Product added to cart successfully!');
- 
-this.cartService.updateCartItems(this.cartItems);
+    this.cartService.updateCartItems(this.cartItems);
   }
-   backClicked() {
-    // this.location.back();
+
+  backClicked() {
     const cat = sessionStorage.getItem('category');
     this.router.navigate(['/listing', cat]);
   }

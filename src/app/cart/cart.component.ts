@@ -1,17 +1,21 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CartItem } from '../shared/constant/data.model';
 
 @Component({
   selector: 'app-cart',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css']
 })
 export class CartComponent implements OnInit {
-  userId: string | null = sessionStorage.getItem('ID'); // Retrieve session ID
-  cartItems: any[] = []; // Declare cartItems array
-  totalPrice: number = 0; // Variable to store total price
-  cartKey: string = ''; // Key for localStorage
+  userId: string | null = sessionStorage.getItem('ID');
+  cartItems: any[] = [];
+  totalPrice: number = 0;
+  cartKey: string = '';
 
   constructor(private cartService: CartService) {}
 
@@ -31,12 +35,11 @@ export class CartComponent implements OnInit {
     }
     this.calculateTotalPrice();
     this.cartService.updateCartItems(this.cartItems);
-    
   }
 
   calculateTotalPrice(): void {
     this.totalPrice = this.cartItems.reduce(
-      (total, item) => total + (item.price ? +item.price : 0) * (item.quantity ? +item.quantity : 0), 
+      (total, item) => total + (item.price ? +item.price : 0) * (item.quantity ? +item.quantity : 0),
       0
     );
     this.totalPrice = parseFloat(this.totalPrice.toFixed(2));
@@ -49,13 +52,15 @@ export class CartComponent implements OnInit {
     this.calculateTotalPrice();
     this.cartService.updateCartItems(this.cartItems);
   }
+
   emptyCart(): void {
-    this.cartItems = []; // Clear cart items
-    localStorage.removeItem(this.cartKey); // Remove cart from local storage
-    this.totalPrice = 0; // Reset total price
-    this.cartService.updateTotalPrice(this.totalPrice); // Update total price in service
-    this.cartService.updateCartItems(this.cartItems); // Update cart items in service
+    this.cartItems = [];
+    localStorage.removeItem(this.cartKey);
+    this.totalPrice = 0;
+    this.cartService.updateTotalPrice(this.totalPrice);
+    this.cartService.updateCartItems(this.cartItems);
   }
+
   decreaseQuantity(item: CartItem): void {
     if (item.quantity > 1) {
       item.quantity--;
@@ -67,6 +72,7 @@ export class CartComponent implements OnInit {
     item.quantity++;
     this.updateCart();
   }
+
   updateCart(): void {
     localStorage.setItem(this.cartKey, JSON.stringify(this.cartItems));
     this.calculateTotalPrice();

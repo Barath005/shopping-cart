@@ -1,16 +1,21 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import {  NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { filter } from 'rxjs';
+import { NavbarComponent } from '../navbar/navbar.component';
+import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-home-page',
+  standalone: true,
+  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],  // ← add both
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.css']
 })
 export class HomePageComponent implements OnInit {
-
   isMenuScrolled: boolean = false;
+
   constructor(public router: Router) { }
 
   ngOnInit() {
@@ -20,16 +25,13 @@ export class HomePageComponent implements OnInit {
       window.scrollTo(0, 0);
     });
   }
-  
+
   @HostListener('window:scroll', ['$event'])
-  scrollCheck(){
-    if(window.pageYOffset > 100)
-      this.isMenuScrolled = true;
-    else
-      this.isMenuScrolled = false
+  scrollCheck() {
+    this.isMenuScrolled = window.pageYOffset > 100;
   }
 
-  scrollToTop(){
-    document.body.scrollIntoView({behavior: 'smooth'})
+  scrollToTop() {
+    document.body.scrollIntoView({ behavior: 'smooth' });
   }
 }

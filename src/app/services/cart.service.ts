@@ -11,7 +11,6 @@ export class CartService {
   private totalPriceSubject = new BehaviorSubject<number>(0);
   totalPrice$ = this.totalPriceSubject.asObservable();
 
-
   constructor() {
     this.loadInitialCartItems();
   }
@@ -30,7 +29,7 @@ export class CartService {
   updateCartItems(items: CartItem[]) {
     this.cartItems.next(items);
     this.saveCartItems(items);
-    this.calculateTotalPrice(); // Update total price when cart items change
+    this.calculateTotalPrice();
   }
 
   addToCart(newItem: CartItem) {
@@ -45,6 +44,7 @@ export class CartService {
 
     this.updateCartItems(currentItems);
   }
+
   updateTotalPrice(totalPrice: number) {
     this.totalPriceSubject.next(totalPrice);
   }
@@ -56,13 +56,16 @@ export class CartService {
       localStorage.setItem(cartKey, JSON.stringify(items));
     }
   }
+
   getTotalPrice(): number {
     return this.totalPriceSubject.value;
   }
+
   calculateTotalPrice() {
     const items = this.cartItems.getValue();
-    const totalPrice = items.reduce((total, item) => total + (item.price ? +item.price : 0) * (item.quantity ? +item.quantity : 0), 0);
+    const totalPrice = items.reduce(
+      (total, item) => total + (item.price ? +item.price : 0) * (item.quantity ? +item.quantity : 0), 0
+    );
     this.totalPriceSubject.next(totalPrice);
   }
-
 }
